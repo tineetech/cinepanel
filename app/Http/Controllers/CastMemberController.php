@@ -6,6 +6,7 @@ use App\Models\CastMember;
 use App\Models\Film;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CastMemberController extends Controller
 {
@@ -23,6 +24,7 @@ class CastMemberController extends Controller
             'phone' => $c->phone ?? '-',
             'catatan' => $c->notes ?? '-',
             'status' => $c->status,
+            'image' => $c->image,
         ]);
         return view('pages.cast-members.index', compact('castMembers', 'films', 'castMemberData'));
     }
@@ -42,10 +44,14 @@ class CastMemberController extends Controller
             'role_type' => 'nullable|string|max:50',
             'age' => 'nullable|integer|min:0|max:200',
             'phone' => 'nullable|string|max:20',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'notes' => 'nullable|string',
             'status' => 'nullable|string|max:50',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('cast-members', 'public');
+        }
 
         $castMember = CastMember::create($validated);
 
@@ -80,10 +86,17 @@ class CastMemberController extends Controller
             'role_type' => 'nullable|string|max:50',
             'age' => 'nullable|integer|min:0|max:200',
             'phone' => 'nullable|string|max:20',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'notes' => 'nullable|string',
             'status' => 'nullable|string|max:50',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($castMember->image && Storage::disk('public')->exists($castMember->image)) {
+                Storage::disk('public')->delete($castMember->image);
+            }
+            $validated['image'] = $request->file('image')->store('cast-members', 'public');
+        }
 
         $castMember->update($validated);
 
@@ -98,6 +111,9 @@ class CastMemberController extends Controller
 
     public function destroy(CastMember $castMember)
     {
+        if ($castMember->image && Storage::disk('public')->exists($castMember->image)) {
+            Storage::disk('public')->delete($castMember->image);
+        }
         $name = $castMember->name;
         $castMember->delete();
 

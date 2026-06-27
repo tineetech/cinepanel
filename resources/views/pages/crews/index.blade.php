@@ -9,7 +9,7 @@
     <h2>Kelola Crew</h2>
     <p class="text-muted">Manajemen data kru produksi film</p>
   </div>
-  <button class="btn btn-primary" onclick="openModal('crew-modal')">
+  <button class="btn btn-primary" onclick="resetCrewForm()">
     <i class="fa-solid fa-plus"></i> Tambah Crew
   </button>
 </div>
@@ -51,7 +51,11 @@
         <td class="text-muted">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</td>
         <td>
           <div class="avatar-cell">
-            <div class="avatar-sm">{{ substr($crew->name, 0, 2) }}</div>
+            @if ($crew->image)
+              <img src="{{ Storage::url($crew->image) }}" class="avatar-sm" style="object-fit:cover;border-radius:50%">
+            @else
+              <div class="avatar-sm">{{ substr($crew->name, 0, 2) }}</div>
+            @endif
             {{ $crew->name }}
           </div>
         </td>
@@ -125,7 +129,7 @@
       </div>
       <button class="modal-close" onclick="closeModal('crew-modal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <form method="POST" action="{{ route('crews.store') }}" id="crew-form">
+    <form method="POST" action="{{ route('crews.store') }}" id="crew-form" enctype="multipart/form-data">
       @csrf
       <div class="modal-body">
         <div class="form-grid">
@@ -169,6 +173,10 @@
               <label>Email</label>
               <input class="form-control" type="email" name="email" placeholder="crew@example.com">
             </div>
+            <div class="form-group">
+              <label>Foto Crew</label>
+              <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+            </div>
           </div>
         </div>
       </div>
@@ -199,11 +207,25 @@
 @push('scripts')
 const crewData = @json($crewData);
 
+function resetCrewForm() {
+  const form = document.getElementById('crew-form');
+  form.action = '{{ route("crews.index") }}';
+  form.querySelector('input[name="_method"]')?.remove();
+  form.reset();
+  form.querySelector('[name="image"]').value = '';
+  const cur = form.querySelector('.file-current');
+  if (cur) cur.remove();
+  document.getElementById('crew-modal-title').textContent = 'Tambah Crew Baru';
+  openModal('crew-modal');
+}
+
 function viewCrew(id) {
   const c = crewData[id]; if (!c) return;
   const sc = { Aktif:'badge-green', 'Tidak Aktif':'badge-gray' }[c.status] || 'badge-gray';
   document.getElementById('view-crew-body').innerHTML =
-    '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px"><div style="width:70px;height:70px;border-radius:50%;background:var(--bg-4);display:grid;place-items:center;font-size:28px;color:var(--accent);flex-shrink:0;border:1px solid var(--border)"><i class="fa-solid fa-user-tie"></i></div><div><div style="font-size:20px;font-weight:800;margin-bottom:4px">' + c.nama + '</div><div style="font-size:13px;color:var(--text-2)">' + c.film + ' · ' + c.posisi + '</div><div style="margin-top:8px"><span class="badge ' + sc + '">' + c.status + '</span></div></div></div>' +
+    '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px">' +
+    (c.image ? '<img src="{{ asset('storage') }}/' + c.image + '" style="width:70px;height:70px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--accent)">' : '<div style="width:70px;height:70px;border-radius:50%;background:var(--bg-4);display:grid;place-items:center;font-size:28px;color:var(--accent);flex-shrink:0;border:1px solid var(--border)"><i class="fa-solid fa-user-tie"></i></div>') +
+    '<div><div style="font-size:20px;font-weight:800;margin-bottom:4px">' + c.nama + '</div><div style="font-size:13px;color:var(--text-2)">' + c.film + ' · ' + c.posisi + '</div><div style="margin-top:8px"><span class="badge ' + sc + '">' + c.status + '</span></div></div></div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"><div style="background:var(--bg-3);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">POSISI</div><div style="font-size:14px;font-weight:600">' + c.posisi + '</div></div><div style="background:var(--bg-3);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">DEPARTEMEN</div><div style="font-size:14px;font-weight:600">' + c.departemen + '</div></div><div style="background:var(--bg-3);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">TELEPON</div><div style="font-size:14px;font-weight:600">' + c.phone + '</div></div><div style="background:var(--bg-3);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">EMAIL</div><div style="font-size:14px;font-weight:600">' + c.email + '</div></div></div>';
   openModal('view-crew-modal');
 }
@@ -225,6 +247,16 @@ function editCrew(id) {
   form.querySelector('[name="film_id"]').value = c.film_id;
   form.querySelector('[name="phone"]').value = c.phone === '-' ? '' : c.phone;
   form.querySelector('[name="email"]').value = c.email === '-' ? '' : c.email;
+  form.querySelector('[name="image"]').value = '';
+  const cur = form.querySelector('.file-current');
+  if (cur) cur.remove();
+  if (c.image) {
+    let link = document.createElement('div');
+    link.className = 'file-current';
+    link.style.cssText = 'font-size:12px;color:var(--text-2);margin-top:4px';
+    link.innerHTML = '<i class="fa-solid fa-image"></i> Foto saat ini: <a href="{{ asset('storage') }}/' + c.image + '" target="_blank" style="color:var(--accent)">Lihat</a>';
+    form.querySelector('[name="image"]').parentNode.appendChild(link);
+  }
   openModal('crew-modal');
 }
 @endpush

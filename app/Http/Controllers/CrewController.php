@@ -6,6 +6,7 @@ use App\Models\Crew;
 use App\Models\Film;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CrewController extends Controller
 {
@@ -22,6 +23,7 @@ class CrewController extends Controller
             'phone' => $c->phone ?? '-',
             'email' => $c->email ?? '-',
             'status' => $c->status,
+            'image' => $c->image,
         ]);
         return view('pages.crews.index', compact('crews', 'films', 'crewData'));
     }
@@ -39,11 +41,15 @@ class CrewController extends Controller
             'position' => 'nullable|string|max:255',
             'origin' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:100',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'status' => 'nullable|string|max:50',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('crews', 'public');
+        }
 
         $crew = Crew::create($validated);
 
@@ -76,11 +82,18 @@ class CrewController extends Controller
             'position' => 'nullable|string|max:255',
             'origin' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:100',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'status' => 'nullable|string|max:50',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($crew->image && Storage::disk('public')->exists($crew->image)) {
+                Storage::disk('public')->delete($crew->image);
+            }
+            $validated['image'] = $request->file('image')->store('crews', 'public');
+        }
 
         $crew->update($validated);
 
@@ -95,6 +108,9 @@ class CrewController extends Controller
 
     public function destroy(Crew $crew)
     {
+        if ($crew->image && Storage::disk('public')->exists($crew->image)) {
+            Storage::disk('public')->delete($crew->image);
+        }
         $name = $crew->name;
         $crew->delete();
 
