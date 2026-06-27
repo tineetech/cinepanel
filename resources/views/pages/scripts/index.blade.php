@@ -9,7 +9,7 @@
     <h2>Kelola Skenario</h2>
     <p class="text-muted">Manajemen data skrip dan naskah film</p>
   </div>
-  <button class="btn btn-primary" onclick="openModal('script-modal')">
+  <button class="btn btn-primary" onclick="resetScriptForm()">
     <i class="fa-solid fa-plus"></i> Tambah Skenario
   </button>
 </div>
@@ -38,7 +38,7 @@
     <thead>
       <tr>
         <th>#</th><th>Judul</th><th>Film</th><th>Penulis</th>
-        <th>Versi</th><th>Halaman</th><th>Status</th><th>Aksi</th>
+        <th>Versi</th><th>Halaman</th><th>Status</th><th>File</th><th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -69,6 +69,15 @@
           <span class="badge {{ $sc }}">{{ $script->status ?? '-' }}</span>
         </td>
         <td>
+          @if ($script->file_path)
+            <a href="{{ Storage::url($script->file_path) }}" target="_blank" class="btn btn-ghost btn-sm" data-tip="Lihat PDF">
+              <i class="fa-solid fa-file-pdf"></i>
+            </a>
+          @else
+            <span class="text-muted">—</span>
+          @endif
+        </td>
+        <td>
           <div class="action-btns">
             <button class="btn btn-ghost btn-sm btn-icon" onclick="viewScript({{ $script->id }})" data-tip="Detail"><i class="fa-solid fa-eye"></i></button>
             <button class="btn btn-ghost btn-sm btn-icon" onclick="editScript({{ $script->id }})" data-tip="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -81,7 +90,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="8">
+        <td colspan="9">
           <div class="empty-state" style="padding:40px 20px">
             <i class="fa-solid fa-scroll"></i>
             <h3>Belum Ada Skenario</h3>
@@ -124,7 +133,7 @@
       </div>
       <button class="modal-close" onclick="closeModal('script-modal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <form method="POST" action="{{ route('scripts.store') }}" id="script-form">
+    <form method="POST" action="{{ route('scripts.store') }}" id="script-form" enctype="multipart/form-data">
       @csrf
       <div class="modal-body">
         <div class="form-grid">
@@ -164,6 +173,10 @@
                 <option>Final</option>
               </select>
             </div>
+            <div class="form-group">
+              <label>File Skenario (PDF)</label>
+              <input class="form-control" type="file" name="file" accept=".pdf">
+            </div>
           </div>
           <div class="form-group">
             <label>Catatan Revisi</label>
@@ -198,13 +211,26 @@
 @push('scripts')
 const scriptData = @json($scriptsData);
 
+function resetScriptForm() {
+  const form = document.getElementById('script-form');
+  form.action = '{{ route("scripts.index") }}';
+  form.querySelector('input[name="_method"]')?.remove();
+  form.reset();
+  form.querySelector('[name="file"]').value = '';
+  const cur = form.querySelector('.file-current');
+  if (cur) cur.remove();
+  document.getElementById('script-modal-title').textContent = 'Tambah Skenario Baru';
+  openModal('script-modal');
+}
+
 function viewScript(id) {
   const s = scriptData[id]; if (!s) return;
   const sc = { Final:'badge-green', Revisi:'badge-amber', Draft:'badge-gray' }[s.status] || 'badge-gray';
   document.getElementById('view-script-body').innerHTML =
     '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px"><div style="width:70px;height:90px;border-radius:10px;background:var(--bg-4);display:grid;place-items:center;font-size:28px;color:var(--accent);flex-shrink:0;border:1px solid var(--border)"><i class="fa-solid fa-scroll"></i></div><div><div style="font-size:20px;font-weight:800;margin-bottom:4px">' + s.judul + '</div><div style="font-size:13px;color:var(--text-2)">' + s.film + ' · Versi ' + s.versi + '</div><div style="margin-top:8px"><span class="badge ' + sc + '">' + s.status + '</span></div></div></div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"><div style="background:var(--bg-3);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">PENULIS</div><div style="font-size:14px;font-weight:600">' + s.penulis + '</div></div><div style="background:var(--bg-3);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-3);margin-bottom:3px">HALAMAN</div><div style="font-size:14px;font-weight:600">' + (s.halaman !== '-' ? s.halaman + ' hal' : '-') + '</div></div></div>' +
-    '<div style="background:var(--bg-3);border-radius:8px;padding:14px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px">CATATAN REVISI</div><div style="font-size:13px;line-height:1.7;color:var(--text-2)">' + s.catatan + '</div></div>';
+    '<div style="background:var(--bg-3);border-radius:8px;padding:14px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px">CATATAN REVISI</div><div style="font-size:13px;line-height:1.7;color:var(--text-2)">' + s.catatan + '</div></div>' +
+    (s.file_path ? '<div style="margin-top:12px;background:var(--bg-3);border-radius:8px;padding:14px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px">FILE SKENARIO</div><a href="{{ asset('storage') }}/' + s.file_path + '" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:var(--accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px"><i class="fa-solid fa-file-pdf"></i> Lihat / Download PDF</a></div>' : '');
   openModal('view-script-modal');
 }
 
@@ -226,6 +252,17 @@ function editScript(id) {
   form.querySelector('[name="page_count"]').value = s.halaman === '-' ? '' : s.halaman;
   form.querySelector('[name="status"]').value = s.status || '';
   form.querySelector('[name="revision_notes"]').value = s.catatan === '-' ? '' : s.catatan;
+  form.querySelector('[name="file"]').value = '';
+  if (s.file_path) {
+    let link = form.querySelector('.file-current');
+    if (!link) {
+      link = document.createElement('div');
+      link.className = 'file-current';
+      link.style.cssText = 'font-size:12px;color:var(--text-2);margin-top:4px';
+      form.querySelector('[name="file"]').parentNode.appendChild(link);
+    }
+    link.innerHTML = '<i class="fa-solid fa-file-pdf"></i> File saat ini: <a href="{{ asset('storage') }}/' + s.file_path + '" target="_blank" style="color:var(--accent)">Lihat PDF</a>';
+  }
   openModal('script-modal');
 }
 @endpush

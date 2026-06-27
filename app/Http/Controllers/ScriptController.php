@@ -6,6 +6,7 @@ use App\Models\Script;
 use App\Models\Film;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ScriptController extends Controller
 {
@@ -22,6 +23,7 @@ class ScriptController extends Controller
             'halaman' => $s->page_count ?? '-',
             'status' => $s->status,
             'catatan' => $s->revision_notes ?? '-',
+            'file_path' => $s->file_path,
         ]);
         return view('pages.scripts.index', compact('scripts', 'films', 'scriptsData'));
     }
@@ -41,7 +43,12 @@ class ScriptController extends Controller
             'page_count' => 'nullable|integer|min:1',
             'status' => 'nullable|string|max:50',
             'revision_notes' => 'nullable|string',
+            'file' => 'nullable|mimes:pdf|max:10240',
         ]);
+
+        if ($request->hasFile('file')) {
+            $validated['file_path'] = $request->file('file')->store('scripts', 'public');
+        }
 
         $script = Script::create($validated);
 
@@ -76,7 +83,15 @@ class ScriptController extends Controller
             'page_count' => 'nullable|integer|min:1',
             'status' => 'nullable|string|max:50',
             'revision_notes' => 'nullable|string',
+            'file' => 'nullable|mimes:pdf|max:10240',
         ]);
+
+        if ($request->hasFile('file')) {
+            if ($script->file_path && Storage::disk('public')->exists($script->file_path)) {
+                Storage::disk('public')->delete($script->file_path);
+            }
+            $validated['file_path'] = $request->file('file')->store('scripts', 'public');
+        }
 
         $script->update($validated);
 
@@ -91,6 +106,9 @@ class ScriptController extends Controller
 
     public function destroy(Script $script)
     {
+        if ($script->file_path && Storage::disk('public')->exists($script->file_path)) {
+            Storage::disk('public')->delete($script->file_path);
+        }
         $title = $script->title;
         $script->delete();
 
