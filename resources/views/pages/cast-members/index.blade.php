@@ -63,10 +63,9 @@
         <td>
           @php
             $sc = match($castMember->status) {
-              'Utama' => 'badge-green',
-              'Pendukung' => 'badge-amber',
-              'Cameo' => 'badge-purple',
-              'Figuran' => 'badge-gray',
+              'Draft' => 'badge-gray',
+              'Aktif' => 'badge-green',
+              'Tidak Aktif' => 'badge-red',
               default => 'badge-gray',
             };
           @endphp
@@ -170,6 +169,15 @@
               <input class="form-control" type="text" name="phone" placeholder="08xxxxxxxxxx">
             </div>
             <div class="form-group">
+              <label>Status</label>
+              <select class="form-control" name="status">
+                <option value="">— Pilih Status —</option>
+                <option selected>Draft</option>
+                <option>Aktif</option>
+                <option>Tidak Aktif</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Foto Pemeran</label>
               <input class="form-control" type="file" name="image" accept="image/jpeg,image/png,image/webp">
             </div>
@@ -248,6 +256,7 @@ function editCastMember(id) {
   form.querySelector('[name="role_type"]').value = c.peran === '-' ? '' : c.peran;
   form.querySelector('[name="age"]').value = c.usia === '-' ? '' : c.usia;
   form.querySelector('[name="phone"]').value = c.phone === '-' ? '' : c.phone;
+  form.querySelector('[name="status"]').value = c.status === '-' ? '' : c.status;
   form.querySelector('[name="notes"]').value = c.catatan === '-' ? '' : c.catatan;
   form.querySelector('[name="image"]').value = '';
   const cur = form.querySelector('.file-current');
