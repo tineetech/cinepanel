@@ -9,9 +9,11 @@
     <h2>Kelola Film</h2>
     <p class="text-muted">Manajemen data proyek film keseluruhan</p>
   </div>
+  @if (auth()->user()->role !== 'crew')
   <button class="btn btn-primary" onclick="resetFilmForm(); openModal('film-modal')">
     <i class="fa-solid fa-plus"></i> Tambah Film
   </button>
+  @endif
 </div>
 
 <div class="toolbar">
@@ -76,6 +78,7 @@
           <span class="badge {{ $sc }}">{{ $film->status }}</span>
         </td>
         <td>
+          @if (auth()->user()->role !== 'crew')
           <form method="POST" action="{{ route('films.update', $film) }}" style="display:inline">
             @csrf @method('PUT')
             <input type="hidden" name="is_focus" value="{{ $film->is_focus ? 0 : 1 }}">
@@ -83,15 +86,18 @@
               <i class="fa-solid {{ $film->is_focus ? 'fa-star' : 'fa-star' }}" style="color:{{ $film->is_focus ? 'var(--accent)' : 'var(--text-3)' }}"></i>
             </button>
           </form>
+          @endif
         </td>
         <td>
           <div class="action-btns">
             <button class="btn btn-ghost btn-sm btn-icon" onclick="viewFilm({{ $film->id }})" data-tip="Detail"><i class="fa-solid fa-eye"></i></button>
+            @if (auth()->user()->role !== 'crew')
             <button class="btn btn-ghost btn-sm btn-icon" onclick="editFilm({{ $film->id }})" data-tip="Edit"><i class="fa-solid fa-pen"></i></button>
             <form method="POST" action="{{ route('films.destroy', $film) }}" style="display:inline" onsubmit="return confirm('Yakin ingin menghapus film ini?')">
               @csrf @method('DELETE')
               <button class="btn btn-danger btn-sm btn-icon" data-tip="Hapus"><i class="fa-solid fa-trash"></i></button>
             </form>
+            @endif
           </div>
         </td>
       </tr>

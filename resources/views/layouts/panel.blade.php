@@ -380,10 +380,12 @@ select.form-control { cursor: pointer; }
     </div>
     <div class="nav-group">
       <div class="nav-group-label">Perencanaan</div>
+      @if (auth()->user()->role !== 'crew')
       <a href="{{ route('rab-items.index') }}" class="nav-item {{ $page === 'rab-items' ? 'active' : '' }}">
         <i class="fa-solid fa-file-invoice-dollar"></i>
         <span class="nav-label">Kelola RAB</span>
       </a>
+      @endif
       <a href="{{ route('locations.index') }}" class="nav-item {{ $page === 'locations' ? 'active' : '' }}">
         <i class="fa-solid fa-map-location-dot"></i>
         <span class="nav-label">Kelola Lokasi</span>

@@ -43,6 +43,7 @@
       @endif
     </div>
   </div>
+  @if (auth()->user()->role !== 'crew')
   <div class="stat-card">
     <div class="stat-icon pink"><i class="fa-solid fa-file-invoice-dollar"></i></div>
     <div class="stat-data">
@@ -53,6 +54,7 @@
       @endif
     </div>
   </div>
+  @endif
   <div class="stat-card">
     <div class="stat-icon blue"><i class="fa-solid fa-map-location-dot"></i></div>
     <div class="stat-data">

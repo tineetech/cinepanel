@@ -33,6 +33,9 @@ class FilmController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->role === 'crew') {
+            abort(403, 'Unauthorized');
+        }
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
@@ -83,6 +86,9 @@ class FilmController extends Controller
 
     public function update(Request $request, Film $film)
     {
+        if (auth()->user()->role === 'crew') {
+            abort(403, 'Unauthorized');
+        }
         $rules = [
             'title' => 'sometimes|required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
@@ -128,6 +134,9 @@ class FilmController extends Controller
 
     public function destroy(Film $film)
     {
+        if (auth()->user()->role === 'crew') {
+            abort(403, 'Unauthorized');
+        }
         $title = $film->title;
         if ($film->image) {
             Storage::disk('public')->delete($film->image);
