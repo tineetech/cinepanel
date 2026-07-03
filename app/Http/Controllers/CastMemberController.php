@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CastMember;
 use App\Models\Film;
 use App\Models\ActivityLog;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -107,6 +108,21 @@ class CastMemberController extends Controller
         ]);
 
         return redirect()->route('cast-members.index')->with('success', 'Pemeran berhasil diperbarui!');
+    }
+
+    public function exportPdf()
+    {
+        $castMembers = CastMember::with('film')->latest()->get();
+
+        $html = view('pages.cast-members.pdf', compact('castMembers'))->render();
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        return response($dompdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="laporan-pemeran.pdf"');
     }
 
     public function destroy(CastMember $castMember)

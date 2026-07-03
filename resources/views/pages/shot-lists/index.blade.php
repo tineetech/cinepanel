@@ -9,9 +9,14 @@
     <h2>Kelola Shot List</h2>
     <p class="text-muted">Daftar pengambilan gambar per scene</p>
   </div>
-  <button class="btn btn-primary" onclick="openModal('shot-list-modal')">
-    <i class="fa-solid fa-plus"></i> Tambah Shot
-  </button>
+  <div style="display:flex;gap:8px">
+    <a href="{{ route('shot-lists.export-pdf') }}" class="btn btn-outline" target="_blank">
+      <i class="fa-solid fa-file-pdf"></i> PDF
+    </a>
+    <button class="btn btn-primary" onclick="openModal('shot-list-modal')">
+      <i class="fa-solid fa-plus"></i> Tambah Shot
+    </button>
+  </div>
 </div>
 
 <div class="toolbar">

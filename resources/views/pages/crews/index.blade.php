@@ -9,9 +9,14 @@
     <h2>Kelola Crew</h2>
     <p class="text-muted">Manajemen data kru produksi film</p>
   </div>
-  <button class="btn btn-primary" onclick="resetCrewForm()">
-    <i class="fa-solid fa-plus"></i> Tambah Crew
-  </button>
+  <div style="display:flex;gap:8px">
+    <a href="{{ route('crews.export-pdf') }}" class="btn btn-outline" target="_blank">
+      <i class="fa-solid fa-file-pdf"></i> PDF
+    </a>
+    <button class="btn btn-primary" onclick="resetCrewForm()">
+      <i class="fa-solid fa-plus"></i> Tambah Crew
+    </button>
+  </div>
 </div>
 
 <div class="toolbar">

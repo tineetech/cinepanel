@@ -24,13 +24,16 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('films', FilmController::class);
     Route::resource('cast-members', CastMemberController::class);
+    Route::get('/cast-members/export/pdf', [CastMemberController::class, 'exportPdf'])->name('cast-members.export-pdf');
     Route::resource('crews', CrewController::class);
+    Route::get('/crews/export/pdf', [CrewController::class, 'exportPdf'])->name('crews.export-pdf');
     Route::resource('properties', PropertyController::class);
     Route::resource('rab-items', RabItemController::class);
     Route::resource('locations', LocationController::class);
     Route::resource('schedules', ScheduleController::class);
     Route::resource('scripts', ScriptController::class);
     Route::resource('shot-lists', ShotListController::class);
+    Route::get('/shot-lists/export/pdf', [ShotListController::class, 'exportPdf'])->name('shot-lists.export-pdf');
     Route::resource('activity-logs', ActivityLogController::class)->only(['index', 'store', 'destroy']);
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

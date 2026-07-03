@@ -7,6 +7,7 @@ use App\Models\Film;
 use App\Models\Location;
 use App\Models\CastMember;
 use App\Models\ActivityLog;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 
 class ShotListController extends Controller
@@ -114,6 +115,21 @@ class ShotListController extends Controller
         ]);
 
         return redirect()->route('shot-lists.index')->with('success', 'Shot list berhasil diperbarui!');
+    }
+
+    public function exportPdf()
+    {
+        $shotLists = ShotList::with(['film', 'location', 'cast'])->latest()->get();
+
+        $html = view('pages.shot-lists.pdf', compact('shotLists'))->render();
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        return response($dompdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="laporan-shot-list.pdf"');
     }
 
     public function destroy(ShotList $shotList)

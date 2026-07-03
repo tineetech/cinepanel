@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Crew;
 use App\Models\Film;
 use App\Models\ActivityLog;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -104,6 +105,21 @@ class CrewController extends Controller
         ]);
 
         return redirect()->route('crews.index')->with('success', 'Crew berhasil diperbarui!');
+    }
+
+    public function exportPdf()
+    {
+        $crews = Crew::with('film')->latest()->get();
+
+        $html = view('pages.crews.pdf', compact('crews'))->render();
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        return response($dompdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="laporan-crew.pdf"');
     }
 
     public function destroy(Crew $crew)

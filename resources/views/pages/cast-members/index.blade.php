@@ -9,9 +9,14 @@
     <h2>Kelola Cast</h2>
     <p class="text-muted">Manajemen data pemeran film</p>
   </div>
-  <button class="btn btn-primary" onclick="resetCastMemberForm()">
-    <i class="fa-solid fa-plus"></i> Tambah Pemeran
-  </button>
+  <div style="display:flex;gap:8px">
+    <a href="{{ route('cast-members.export-pdf') }}" class="btn btn-outline" target="_blank">
+      <i class="fa-solid fa-file-pdf"></i> PDF
+    </a>
+    <button class="btn btn-primary" onclick="resetCastMemberForm()">
+      <i class="fa-solid fa-plus"></i> Tambah Pemeran
+    </button>
+  </div>
 </div>
 
 <div class="toolbar">
