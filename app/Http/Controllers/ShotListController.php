@@ -14,14 +14,16 @@ class ShotListController extends Controller
 {
     public function index()
     {
-        $shotLists = ShotList::with(['film', 'location', 'cast'])->latest()->paginate(10);
+        $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderBy('shot_order')->paginate(10);
         $films = Film::all();
+        $focusFilm = Film::where('is_focus', true)->first();
         $locations = Location::all();
         $castMembers = CastMember::all();
         $shotListsData = $shotLists->keyBy('id')->map(fn($s) => [
             'film' => $s->film?->title ?? '-',
             'film_id' => $s->film_id,
             'scene' => $s->scene ?? '-',
+            'shot_order' => $s->shot_order ?? '-',
             'deskripsi' => $s->shot_description ?? '-',
             'kamera' => $s->camera_type ?? '-',
             'gerakan' => $s->camera_movement ?? '-',
@@ -31,7 +33,7 @@ class ShotListController extends Controller
             'status' => $s->status,
             'catatan' => $s->director_notes ?? '-',
         ]);
-        return view('pages.shot-lists.index', compact('shotLists', 'films', 'locations', 'castMembers', 'shotListsData'));
+        return view('pages.shot-lists.index', compact('shotLists', 'films', 'focusFilm', 'locations', 'castMembers', 'shotListsData'));
     }
 
     public function create()
@@ -49,13 +51,23 @@ class ShotListController extends Controller
             'camera_type' => 'nullable|string|max:100',
             'camera_movement' => 'nullable|string|max:100',
             'estimated_duration' => 'nullable|string|max:50',
-            'location_id' => 'nullable|exists:locations,id',
+            'location_name' => 'nullable|string|max:255',
             'cast_id' => 'nullable|exists:cast_members,id',
             'sound' => 'nullable|array',
             'shoot_time' => 'nullable|string|max:50',
             'status' => 'nullable|string|max:50',
             'director_notes' => 'nullable|string',
         ]);
+
+        if ($locationName = $request->input('location_name')) {
+            $existing = Location::where('name', $locationName)->first();
+            if ($existing) {
+                $validated['location_id'] = $existing->id;
+            } else {
+                $validated['location_id'] = Location::create(['name' => $locationName])->id;
+            }
+        }
+        unset($validated['location_name']);
 
         if (isset($validated['sound']) && is_array($validated['sound'])) {
             $validated['sound'] = json_encode($validated['sound']);
@@ -94,13 +106,27 @@ class ShotListController extends Controller
             'camera_type' => 'nullable|string|max:100',
             'camera_movement' => 'nullable|string|max:100',
             'estimated_duration' => 'nullable|string|max:50',
-            'location_id' => 'nullable|exists:locations,id',
+            'location_name' => 'nullable|string|max:255',
             'cast_id' => 'nullable|exists:cast_members,id',
             'sound' => 'nullable|array',
             'shoot_time' => 'nullable|string|max:50',
             'status' => 'nullable|string|max:50',
             'director_notes' => 'nullable|string',
         ]);
+
+        if ($request->has('location_name')) {
+            if ($locationName = $request->input('location_name')) {
+                $existing = Location::where('name', $locationName)->first();
+                if ($existing) {
+                    $validated['location_id'] = $existing->id;
+                } else {
+                    $validated['location_id'] = Location::create(['name' => $locationName])->id;
+                }
+            } else {
+                $validated['location_id'] = null;
+            }
+        }
+        unset($validated['location_name']);
 
         if (isset($validated['sound']) && is_array($validated['sound'])) {
             $validated['sound'] = json_encode($validated['sound']);
@@ -119,9 +145,10 @@ class ShotListController extends Controller
 
     public function exportPdf()
     {
-        $shotLists = ShotList::with(['film', 'location', 'cast'])->latest()->get();
+        $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderBy('shot_order')->get();
+        $focusFilm = Film::where('is_focus', true)->first();
 
-        $html = view('pages.shot-lists.pdf', compact('shotLists'))->render();
+        $html = view('pages.shot-lists.pdf', compact('shotLists', 'focusFilm'))->render();
 
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
