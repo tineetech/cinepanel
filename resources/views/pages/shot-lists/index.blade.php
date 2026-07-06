@@ -43,8 +43,8 @@
   <table id="shot-list-table">
     <thead>
       <tr>
-        <th>#</th><th>Scene</th><th>Shot Ke-</th><th>Deskripsi</th><th>Film</th>
-        <th>Tipe Kamera</th><th>Durasi Est</th><th>Lokasi</th><th>Status</th><th>Catatan Sutradara</th><th>Aksi</th>
+        <th>#</th><th>Scene</th><th>Shot Ke-</th><th>Deskripsi</th>
+        <th>Tipe Kamera</th><th>Lokasi</th><th>Catatan Sutradara</th><th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -56,20 +56,7 @@
         <td>{{ $shotList->shot_description ?? '-' }}</td>
         <td>{{ $shotList->film?->title ?? '-' }}</td>
         <td>{{ $shotList->camera_type ?? '-' }}</td>
-        <td>{{ $shotList->estimated_duration ?? '-' }}</td>
         <td>{{ $shotList->location?->name ?? '-' }}</td>
-        <td>
-          @php
-            $sc = match($shotList->status) {
-              'Selesai' => 'badge-green',
-              'Proses' => 'badge-amber',
-              'Revisi' => 'badge-red',
-              'Belum' => 'badge-gray',
-              default => 'badge-gray',
-            };
-          @endphp
-          <span class="badge {{ $sc }}">{{ $shotList->status ?? '-' }}</span>
-        </td>
         <td>{{ Str::limit($shotList->director_notes, 30) ?? '-' }}</td>
         <td>
           <div class="action-btns">
@@ -84,7 +71,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="11">
+        <td colspan="8">
           <div class="empty-state" style="padding:40px 20px">
             <i class="fa-solid fa-list-check"></i>
             <h3>Belum Ada Shot List</h3>
