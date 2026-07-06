@@ -44,7 +44,7 @@
     <thead>
       <tr>
         <th>#</th><th>Scene</th><th>Shot Ke-</th><th>Deskripsi</th><th>Film</th>
-        <th>Tipe Kamera</th><th>Durasi Est</th><th>Lokasi</th><th>Status</th><th>Aksi</th>
+        <th>Tipe Kamera</th><th>Durasi Est</th><th>Lokasi</th><th>Status</th><th>Catatan Sutradara</th><th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -70,6 +70,7 @@
           @endphp
           <span class="badge {{ $sc }}">{{ $shotList->status ?? '-' }}</span>
         </td>
+        <td>{{ Str::limit($shotList->director_notes, 30) ?? '-' }}</td>
         <td>
           <div class="action-btns">
             <button class="btn btn-ghost btn-sm btn-icon" onclick="viewShotList({{ $shotList->id }})" data-tip="Detail"><i class="fa-solid fa-eye"></i></button>
@@ -83,7 +84,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="10">
+        <td colspan="11">
           <div class="empty-state" style="padding:40px 20px">
             <i class="fa-solid fa-list-check"></i>
             <h3>Belum Ada Shot List</h3>
