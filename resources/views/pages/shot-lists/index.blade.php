@@ -98,6 +98,15 @@
   <div class="table-pagination">
     <span class="pagination-info">Menampilkan {{ $shotLists->firstItem() }}–{{ $shotLists->lastItem() }} dari {{ $shotLists->total() }} shot</span>
     <div class="pagination-btns">
+      <form method="GET" action="{{ route('shot-lists.index') }}" style="display:flex;align-items:center;gap:6px;margin-right:8px;font-size:12px;color:var(--text-2)">
+        <label>Tampil</label>
+        <select name="per_page" onchange="this.form.submit()" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-2);color:var(--text-1);font-size:12px">
+          <option value="10" {{ request('per_page', 50) == 10 ? 'selected' : '' }}>10</option>
+          <option value="20" {{ request('per_page', 50) == 20 ? 'selected' : '' }}>20</option>
+          <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50</option>
+          <option value="100" {{ request('per_page', 50) == 100 ? 'selected' : '' }}>100</option>
+        </select>
+      </form>
       @if ($shotLists->onFirstPage())
         <button class="pg-btn" disabled><i class="fa-solid fa-chevron-left"></i></button>
       @else
