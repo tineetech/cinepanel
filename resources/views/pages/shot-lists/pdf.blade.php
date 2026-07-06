@@ -30,10 +30,17 @@
   </tr>
 </thead>
 <tbody>
+  @php $prevScene = null; $sceneCount = 0; $letterIdx = 0; @endphp
   @forelse ($shotLists as $s)
+  @php
+    $sceneNum = preg_replace('/\D/', '', $s->scene) ?: '0';
+    if ($s->scene !== $prevScene) { $sceneCount = 1; $letterIdx = 0; } else { $sceneCount++; }
+    $letterIdx++;
+    $prevScene = $s->scene;
+  @endphp
   <tr>
-    <td>{{ $s->scene ?? '-' }}</td>
-    <td>{{ preg_replace('/\D/', '', $s->scene) }}{{ chr(64 + $loop->iteration) }}</td>
+    <td>{{ $sceneCount === 1 ? $s->scene : '' }}</td>
+    <td>{{ $sceneNum }}{{ chr(64 + $letterIdx) }} ({{ $s->shot_order ?? $letterIdx }})</td>
     <td>{{ $s->camera_type ?? '-' }}</td>
     <td>{{ $s->camera_movement ?? '-' }}</td>
     <td>{{ $s->estimated_duration ?? '-' }}</td>
