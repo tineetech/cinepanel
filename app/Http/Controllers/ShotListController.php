@@ -15,7 +15,7 @@ class ShotListController extends Controller
     public function index()
     {
         $perPage = in_array(request('per_page'), [10, 20, 50, 100]) ? (int) request('per_page') : 50;
-        $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderBy('shot_order')->paginate($perPage)->withQueryString();
+        $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderByRaw('CAST(shot_order AS UNSIGNED)')->paginate($perPage)->withQueryString();
         $films = Film::all();
         $focusFilm = Film::where('is_focus', true)->first();
         $locations = Location::all();
@@ -146,7 +146,7 @@ class ShotListController extends Controller
 
     public function exportPdf()
     {
-        $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderBy('shot_order')->get();
+        $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderByRaw('CAST(shot_order AS UNSIGNED)')->get();
         $focusFilm = Film::where('is_focus', true)->first();
 
         $html = view('pages.shot-lists.pdf', compact('shotLists', 'focusFilm'))->render();
