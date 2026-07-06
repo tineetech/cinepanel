@@ -14,7 +14,7 @@ class ShotListController extends Controller
 {
     public function index()
     {
-        $perPage = in_array(request('per_page'), [10, 20, 50, 100]) ? (int) request('per_page') : 50;
+        $perPage = in_array(request('per_page'), [10, 20, 50, 100]) ? (int) request('per_page') : 100;
         $shotLists = ShotList::with(['film', 'location', 'cast'])->orderByRaw('LENGTH(scene), scene')->orderByRaw('CAST(shot_order AS UNSIGNED)')->paginate($perPage)->withQueryString();
         $films = Film::all();
         $focusFilm = Film::where('is_focus', true)->first();
